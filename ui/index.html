@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:; frame-src https: data: blob:; connect-src 'self' https:">
+<title>BoxUp Logistics Hub</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- SIGN IN -->
+<section id="login" class="hide">
+  <img class="logo" src="assets/logo.png" alt="BOXUP">
+  <div class="lcard">
+    <img class="lg" src="assets/logo.png" alt="BOXUP">
+    <h2>Sign in to BoxUp Logistics Hub</h2>
+    <p>Sign in with your Gmail. One sign-in opens every BoxUp app.</p>
+    <button class="gbtn" id="gsign"><i>G</i>Continue with Google</button>
+    <div class="lerr hide" id="lerr"></div>
+    <ul>
+      <li><b>&#10003;</b>Label Log and Delivery Tracker sheets, already logged in</li>
+      <li><b>&#10003;</b>Label Generator, Order Tracker, Gate apps</li>
+      <li><b>&#10003;</b>WhatsApp, linked once on this computer</li>
+    </ul>
+    <p class="small">Only <b id="allowedEmail">logisticsboxup@gmail.com</b> can sign in to this program.</p>
+  </div>
+</section>
+
+<!-- LOADING -->
+<section id="boot"><img src="assets/logo.png" alt="BOXUP"><div class="spin"></div></section>
+
+<!-- MAIN SHELL -->
+<section id="shell" class="hide">
+  <div class="top" id="topbar"></div>
+  <div class="view" id="view">
+    <div id="home" class="page-home"></div>
+    <div id="tabs"></div>
+    <div id="acct" class="hide"></div>
+  </div>
+</section>
+
+<div id="layer"></div>
+<div id="toasts"></div>
+
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

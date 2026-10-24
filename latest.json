@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "date": "25 Oct 2026",
+  "notes": [
+    {
+      "icon": "&#127881;",
+      "title": "First version",
+      "text": "Home, all BoxUp apps as tabs, + picker, Google search, WhatsApp, settings, festival tag, updates"
+    }
+  ],
+  "files": [
+    {
+      "path": "app.css",
+      "sha256": "a37c6181d0bb821c04b226e0b324f6545036914265ca391a058503ed207fa057"
+    },
+    {
+      "path": "app.js",
+      "sha256": "852aa18dc82f85854af78975d1bde47affb41d23845b5286a2cdc9b4d02e9c7c"
+    },
+    {
+      "path": "assets/bg.jpg",
+      "sha256": "b8f0534b47a77ed696b52de1ff28e898787327911bb5fb5a79ad5a0a80512839"
+    },
+    {
+      "path": "assets/icon.png",
+      "sha256": "72343d4d1f57961d7390775957476573107d5aef9d3248dd5a05fbec14e8d36b"
+    },
+    {
+      "path": "assets/logo.png",
+      "sha256": "0c8e87555fcb78139da88a8940af69ae6050b0ee8e607d239a04de3e927b92e7"
+    },
+    {
+      "path": "assets/rubik-900.woff2",
+      "sha256": "9ab80489aea97335ef86ea6d7386e5ffbf57a2abeeaea8da6f84c694c87792ad"
+    },
+    {
+      "path": "index.html",
+      "sha256": "b751803508525e11c94b3cf3f97f834b1aa6ff06ce68d1606a09c7507db251a2"
+    },
+    {
+      "path": "vendor/JsBarcode.all.min.js",
+      "sha256": "e307d9489aca4985f8e1c9bc246e8c275a091953c539e2b7b50b511efea59509"
+    },
+    {
+      "path": "vendor/xlsx.full.min.js",
+      "sha256": "c9506197caf809a075b6dee1da0d36fb19da7158ffe8a88e7b0c96c5d8623c99"
+    },
+    {
+      "path": "version.json",
+      "sha256": "705f5e244229493ee06e69f5af0b066b5d0aa1eb92548a8d1d98bd81953371ea"
+    }
+  ]
+}

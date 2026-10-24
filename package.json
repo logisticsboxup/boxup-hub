@@ -1,0 +1,48 @@
+{
+  "name": "boxup-logistics-hub",
+  "version": "1.0.0",
+  "description": "BoxUp Logistics Hub",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --x64"
+  },
+  "author": "BoxUp Luxury Gifting",
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  },
+  "productName": "BoxUp Logistics Hub",
+  "build": {
+    "appId": "com.boxup.logisticshub",
+    "productName": "BoxUp Logistics Hub",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "ui/**/*",
+      "build/icon.png"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "BoxUp Logistics Hub",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "artifactName": "BoxUp-Logistics-Hub-Setup-${version}.exe"
+    }
+  }
+}
