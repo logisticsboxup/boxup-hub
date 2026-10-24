@@ -14,11 +14,16 @@
   <div class="lcard">
     <img class="lg" src="assets/logo.png" alt="BOXUP">
     <h2>Sign in to BoxUp Logistics Hub</h2>
-    <p>Sign in with your Gmail. One sign-in opens every BoxUp app.</p>
-    <button class="gbtn" id="gsign"><i>G</i>Continue with Google</button>
+    <p>Sign in with your Gmail. The sign-in opens in Chrome; pick <b>logisticsboxup@gmail.com</b> there and come back.</p>
+    <button class="gbtn" id="gsign"><i>G</i>Sign in with Google</button>
+    <div class="lwait hide" id="lwait">
+      <div class="lwt"><span class="spin"></span>Finish signing in in Chrome&hellip;</div>
+      <div class="lcode"><input id="lcode" maxlength="9" placeholder="Code from Chrome" autocomplete="off"><button class="btn g" id="lcodeok">Use code</button></div>
+      <button class="lnk" id="lcancel">Cancel</button>
+    </div>
     <div class="lerr hide" id="lerr"></div>
     <ul>
-      <li><b>&#10003;</b>Label Log and Delivery Tracker sheets, already logged in</li>
+      <li><b>&#10003;</b>Label Log and Delivery Tracker sheets open in Chrome</li>
       <li><b>&#10003;</b>Label Generator, Order Tracker, Gate apps</li>
       <li><b>&#10003;</b>WhatsApp, linked once on this computer</li>
     </ul>

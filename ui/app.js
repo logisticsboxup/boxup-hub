@@ -107,25 +107,33 @@ async function loadFeed(force){
 /* ---------------- sign in ---------------- */
 function show(id){ ['boot','login','shell'].forEach(x => $('#' + x).classList.toggle('hide', x !== id)); }
 $('#gsign').onclick = async () => {
-  const b = $('#gsign'); b.disabled = true; b.innerHTML = '<i>G</i>Waiting for Google sign-in…';
+  const b = $('#gsign'); b.disabled = true; b.innerHTML = '<i>G</i>Opening Chrome…';
+  $('#lerr').classList.add('hide'); $('#lwait').classList.remove('hide'); $('#lcode').value = '';
   const r = await H.auth.signIn();
-  b.disabled = false; b.innerHTML = '<i>G</i>Continue with Google';
+  b.disabled = false; b.innerHTML = '<i>G</i>Sign in with Google'; $('#lwait').classList.add('hide');
   afterAuth(r);
 };
+$('#lcodeok').onclick = async () => {
+  const r = await H.auth.code($('#lcode').value);
+  if(!r.ok){ const e = $('#lerr'); e.textContent = r.error || 'That code is not right'; e.classList.remove('hide'); }
+};
+$('#lcode').addEventListener('keydown', ev => { if(ev.key === 'Enter') $('#lcodeok').click(); });
+$('#lcancel').onclick = () => H.auth.cancel();
 function afterAuth(r){
   if(r && r.ok){ ME = {name:r.name || 'Logistics', email:r.email}; enter(); return; }
   const e = $('#lerr');
-  if(r && r.email){ e.innerHTML = `Signed in as <b>${esc(r.email)}</b>. Only <b>${esc(r.allowed)}</b> can use this program.<br><button class="btn" id="lout">Sign out and try again</button>`; e.classList.remove('hide'); $('#lout').onclick = async () => { await H.auth.signOut(); e.classList.add('hide'); }; }
-  else if(r && r.error){ e.textContent = 'Could not reach Google. Check the internet and try again.'; e.classList.remove('hide'); }
+  if(r && r.email){ e.innerHTML = `Chrome is signed in as <b>${esc(r.email)}</b>. Only <b>${esc(r.allowed)}</b> can use this program. Switch account in Chrome and try again.`; e.classList.remove('hide'); }
+  else if(r && r.error){ e.textContent = r.error + '. Try again.'; e.classList.remove('hide'); }
   else e.classList.add('hide');
 }
 
 /* ---------------- top bar ---------------- */
 function topbar(){
-  const pinned = homeOrder().map(appById).filter(a => a && a.kind !== 'program' && isOnHome(a));
-  const extra = Object.keys(TABS).map(id => TABS[id].app).filter(a => !pinned.includes(a));
+  // Only apps opened from Home or the + menu show in the bar.
+  const pinned = [];
+  const extra = Object.keys(TABS).map(id => TABS[id].app);
   const btn = a => { const open = !!TABS[a.id], on = current === a.id;
-    return `<button class="tb${on ? ' on' : ''}${open ? ' open' : ''}" data-open="${esc(a.id)}" title="${esc(a.name)}"><i style="background:${a.color}">${a.icon}</i>${esc(a.short || a.name)}${on ? '<span class="cx" data-close="' + esc(a.id) + '" title="Close">&#10005;</span>' : ''}</button>`; };
+    return `<button class="tb${on ? ' on' : ''}${open ? ' open' : ''}" data-open="${esc(a.id)}" title="${esc(a.name)}"><i style="background:${a.color}">${a.icon}</i>${esc(a.short || a.name)}${'<span class="cx" data-close="' + esc(a.id) + '" title="Close">&#10005;</span>'}</button>`; };
   $('#topbar').innerHTML = `<img src="assets/logo.png" alt="BOXUP"><button class="tb home${current === null ? ' on' : ''}" data-act="home">&#8962; Home</button>`
     + pinned.concat(extra).map(btn).join('')
     + `<button class="tb plus" data-act="plus" title="Open an app, website or program">+</button><span class="tsp"></span>`
@@ -139,6 +147,8 @@ function open(id, opts){
   opts = opts || {};
   const a = appById(id) || (TABS[id] && TABS[id].app) || opts.app;
   if(!a) return;
+  const u0 = opts.url || a.url || '';
+  if(/^https:\/\/(docs|mail|drive|sheets)\.google\.com\//i.test(u0)){ H.external(u0); H.log.add(a.name, 'Opened in Chrome'); toast(a.name + ' opened in Chrome'); return; }
   if(a.kind === 'program'){ H.openProgram(a.path); H.log.add('Program', 'Opened ' + a.name); toast('Opening ' + a.name + ' on this computer'); return; }
   let t = TABS[id];
   if(!t){
@@ -381,7 +391,7 @@ const PAGE = {
     const con = (ic, n, d, ok, btn) => `<div class="card con"><span class="ci">${ic}</span><div class="cd"><b>${n}</b><div>${d}</div></div><span class="${ok ? 'ok' : 'no'}">${ok ? '&#10003; Connected' : 'Not connected'}</span>${btn}</div>`;
     const feedOk = !!ORDERS.length;
     return `<div class="phead"><div class="grow"><h1>Connections</h1><div class="sub">Accounts this program uses</div></div></div>
-      ${con('&#128203;', 'Google (Sheets and Gmail)', a.ok ? 'Signed in as ' + esc(a.email) + '. Label Log and Delivery Tracker open already logged in.' : 'Not signed in', a.ok, a.ok ? '<button class="btn" data-open="log">Open Label Log</button>' : '<button class="btn g" data-act="signin">Sign in</button>')}
+      ${con('&#128203;', 'Google (Sheets and Gmail)', a.ok ? 'Signed in as ' + esc(a.email) + '. Label Log, Delivery Tracker and Gmail open in Chrome.' : 'Not signed in', a.ok, a.ok ? '<button class="btn" data-open="log">Open Label Log</button>' : '<button class="btn g" data-act="signin">Sign in</button>')}
       ${con('&#128172;', 'WhatsApp', 'Open the WhatsApp tab once and scan the QR code from your phone (Settings › Linked devices). It then stays logged in here.', true, '<button class="btn" data-open="wa">Open WhatsApp</button>')}
       ${con('&#128202;', 'Label Log data (numbers and Order Tracker)', feedOk ? ORDERS.length + ' orders loaded' : esc(window.__feedErr || 'Not loaded yet'), feedOk, '<button class="btn" data-act="testfeed">Test now</button>')}`;
   },

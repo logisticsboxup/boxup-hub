@@ -23,6 +23,12 @@ button{font-family:inherit;cursor:pointer;color:inherit}
 .gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;background:#fff;border:1px solid #dadce0;border-radius:12px;padding:14px;font:700 15px Inter,Arial;color:#1f1f1f}
 .gbtn:disabled{opacity:.6}
 .gbtn i{font-style:normal;width:26px;height:26px;border-radius:50%;border:2px solid var(--g);display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:var(--g)}
+.lwait{margin-top:12px;background:rgba(255,255,255,.75);border:1px solid #cfe3d8;border-radius:12px;padding:12px 14px}
+.lwt{display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;color:#0d5a3f}
+.spin{width:16px;height:16px;border:2px solid #b9d9c8;border-top-color:#0d7650;border-radius:50%;animation:spin 1s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lcode{display:flex;gap:8px;margin-top:10px}.lcode input{flex:1;min-width:0;border:1px solid #c9d3cd;border-radius:9px;padding:9px 11px;font:700 15px Consolas,monospace;letter-spacing:3px;text-transform:uppercase}
+.lnk{background:none;border:0;color:#3d4a5a;text-decoration:underline;font-size:13px;margin-top:8px;padding:0;cursor:pointer}
 .lerr{margin-top:12px;background:#fbe9e8;color:#9E2B25;border:1px solid #e3a19c;border-radius:10px;padding:10px 12px;font-size:13px}
 .lerr button{margin-top:8px}
 .lcard ul{list-style:none;padding:0;margin:16px 0 0;font-size:13px}.lcard li{display:flex;gap:9px;align-items:center;margin:7px 0}

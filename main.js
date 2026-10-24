@@ -85,6 +85,16 @@ function setupSession() {
 }
 
 app.on('web-contents-created', (e, wc) => {
+  // Google sign-in pages do not work inside the Hub: open the page in Chrome instead.
+  const googleGate = (ev, url) => {
+    if (wc.getType() !== 'webview' || !/^https:\/\/accounts\.google\.com\/(ServiceLogin|v3\/signin|signin|AccountChooser|InteractiveLogin)/i.test(url)) return;
+    ev.preventDefault();
+    let target = url; try { const c = new URL(url).searchParams.get('continue'); if (c && /^https:\/\//.test(c)) target = c; } catch (err) {}
+    openInChrome(target);
+    send('toast', 'This page needs Google sign-in, so it opened in Chrome');
+  };
+  wc.on('will-navigate', googleGate);
+  wc.on('will-redirect', googleGate);
   wc.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\/(wa\.me|api\.whatsapp\.com|web\.whatsapp\.com)\//i.test(url)) { send('open-whatsapp', url); return { action: 'deny' }; }
     if (/^https?:/i.test(url) && wc.getType() === 'webview') { send('open-url', url); return { action: 'deny' }; }
@@ -92,43 +102,74 @@ app.on('web-contents-created', (e, wc) => {
   });
 });
 
-/* ---------------- Google sign-in ---------------- */
-async function googleAccounts() {
-  try {
-    const ses = session.fromPartition(PARTITION);
-    const r = await ses.fetch('https://accounts.google.com/ListAccounts?gpsia=1&source=ChromiumBrowser&json=standard', { method: 'POST' });
-    const t = await r.text();
-    const emails = [...new Set((t.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || []).map(s => s.toLowerCase()))];
-    let name = '';
-    try { const j = JSON.parse(t); const acc = (j[1] || []).find(a => String(a[3]).toLowerCase() === ALLOWED_EMAIL); if (acc) name = acc[2] || ''; } catch (err) {}
-    return { emails, name };
-  } catch (err) { return { emails: [], name: '', error: String(err) }; }
+/* ---------------- Google sign-in (through Chrome) ----------------
+   Google does not allow sign-in inside desktop programs, so the Hub opens the
+   "BoxUp Hub Sign-in" Apps Script page in Chrome. That page sees which Google
+   account is signed in to Chrome and sends a signed answer back to the Hub on
+   127.0.0.1 (or shows a code to type in). */
+const SIGNIN_URL = process.env.BOXUP_TEST ? 'https://example.test/exec' : 'https://script.google.com/macros/s/AKfycbynveib61JhNKO-EYY-QzHqV9qERVJqQIZkjc3k2jIILHrkaFwZF5rKye9Lml6OYfrv/exec';
+const SIGNIN_SECRET = '895c81eab6ff455b546aabcd64d5f822b528136b087ac32b';
+const hmac = (email, nonce) => crypto.createHmac('sha256', SIGNIN_SECRET).update(email + '|' + nonce).digest('hex');
+let pendingSignin = null;
+
+function chromePath() {
+  const c = [process.env.PROGRAMFILES, process.env['PROGRAMFILES(X86)'], process.env.LOCALAPPDATA]
+    .filter(Boolean).map(d => path.join(d, 'Google', 'Chrome', 'Application', 'chrome.exe'));
+  return c.find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
 }
-async function authStatus() {
-  const { emails, name, error } = await googleAccounts();
-  const ok = emails.includes(ALLOWED_EMAIL);
-  return { ok, email: ok ? ALLOWED_EMAIL : (emails[0] || ''), name: name || 'Logistics', others: emails, error, allowed: ALLOWED_EMAIL };
+function openInChrome(url) {
+  if (process.env.BOXUP_TEST) { console.log('OPEN ' + url); return true; }
+  const c = process.platform === 'win32' && chromePath();
+  if (c) { try { require('child_process').spawn(c, [url], { detached: true, stdio: 'ignore' }).unref(); return true; } catch (e) {} }
+  shell.openExternal(url); return true;
+}
+function authStatus() {
+  const a = getSettings().auth;
+  const ok = !!(a && a.email === ALLOWED_EMAIL);
+  return { ok, email: ok ? a.email : '', name: 'Logistics', allowed: ALLOWED_EMAIL };
+}
+function finishSignin(email) {
+  if (!pendingSignin) return;
+  const p = pendingSignin; pendingSignin = null;
+  try { p.server.close(); } catch (e) {}
+  clearTimeout(p.timer);
+  if (email === ALLOWED_EMAIL) { saveSettings({ auth: { email, at: Date.now() } }); logEvent('Sign in', 'Signed in as ' + email); }
+  if (win && !win.isDestroyed()) { if (win.isMinimized()) win.restore(); win.show(); win.focus(); }
+  p.resolve(email ? Object.assign(authStatus(), email !== ALLOWED_EMAIL ? { email, ok: false } : {}) : authStatus());
 }
 function signIn() {
+  if (pendingSignin) finishSignin('');
   return new Promise(resolve => {
-    const w = new BrowserWindow({ width: 520, height: 700, parent: win, modal: true, title: 'Sign in with Google', autoHideMenuBar: true, webPreferences: { partition: PARTITION } });
-    w.removeMenu();
-    let finished = false;
-    const done = async () => { if (finished) return; finished = true; const s = await authStatus(); if (!w.isDestroyed()) w.close(); if (s.ok) logEvent('Sign in', 'Signed in as ' + s.email); resolve(s); };
-    w.webContents.on('did-navigate', (ev, url) => { if (/^https:\/\/myaccount\.google\.com/.test(url)) done(); });
-    w.on('closed', async () => { if (!finished) { finished = true; resolve(await authStatus()); } });
-    w.loadURL('https://accounts.google.com/ServiceLogin?hl=en&continue=' + encodeURIComponent('https://myaccount.google.com/') + '&Email=' + encodeURIComponent(ALLOWED_EMAIL));
+    const http = require('http');
+    const nonce = crypto.randomBytes(16).toString('hex');
+    const page = (title, text) => `<!doctype html><meta charset="utf-8"><title>${title}</title><body style="font-family:Segoe UI,Arial;background:#0f3d2e;display:flex;min-height:100vh;margin:0;align-items:center;justify-content:center"><div style="background:#fff;border-radius:16px;padding:34px 40px;text-align:center;max-width:420px"><div style="letter-spacing:3px;font-size:14px;color:#0f3d2e;font-weight:700;margin-bottom:14px">BOXUP LOGISTICS HUB</div><h2 style="margin:0 0 8px;color:#14251d">${title}</h2><p style="color:#4a5a52">${text}</p></div></body>`;
+    const server = http.createServer((req, res) => {
+      const u = new URL(req.url, 'http://127.0.0.1');
+      if (u.pathname !== '/signed-in') { res.writeHead(404); res.end(); return; }
+      const email = String(u.searchParams.get('email') || '').toLowerCase();
+      const ok = u.searchParams.get('nonce') === nonce && u.searchParams.get('sig') === hmac(email, nonce) && email === ALLOWED_EMAIL;
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(ok ? page('Signed in', 'You can close this tab. The BoxUp Logistics Hub is open.') : page('Could not sign in', 'Go back to the Hub and click Sign in with Google again.'));
+      if (ok) finishSignin(email);
+    });
+    server.listen(0, '127.0.0.1', () => {
+      const port = server.address().port;
+      pendingSignin = { nonce, server, resolve, timer: setTimeout(() => finishSignin(''), 10 * 60 * 1000) };
+      openInChrome(SIGNIN_URL + '?nonce=' + nonce + '&port=' + port);
+    });
+    server.on('error', () => { resolve(Object.assign(authStatus(), { error: 'Could not start sign-in' })); });
   });
 }
+function signInCode(code) {
+  if (!pendingSignin) return { ok: false, error: 'Click Sign in with Google first' };
+  const want = hmac(ALLOWED_EMAIL, pendingSignin.nonce).slice(0, 8).toUpperCase();
+  if (String(code || '').replace(/\s/g, '').toUpperCase() !== want) return { ok: false, error: 'That code is not right' };
+  finishSignin(ALLOWED_EMAIL);
+  return { ok: true };
+}
+function signInCancel() { finishSignin(''); return { ok: true }; }
 async function signOut() {
-  const ses = session.fromPartition(PARTITION);
-  const cookies = await ses.cookies.get({});
-  for (const c of cookies) {
-    if (/google\.com$|youtube\.com$|googleusercontent\.com$/.test(c.domain.replace(/^\./, ''))) {
-      const url = (c.secure ? 'https://' : 'http://') + c.domain.replace(/^\./, '') + c.path;
-      try { await ses.cookies.remove(url, c.name); } catch (e) {}
-    }
-  }
+  saveSettings({ auth: null });
   logEvent('Sign in', 'Signed out');
   return { ok: true };
 }
@@ -208,6 +249,8 @@ ipcMain.handle('settings:set', (e, patch) => {
 ipcMain.handle('auth:status', () => authStatus());
 ipcMain.handle('auth:signin', () => signIn());
 ipcMain.handle('auth:signout', () => signOut());
+ipcMain.handle('auth:code', (e, code) => signInCode(code));
+ipcMain.handle('auth:cancel', () => signInCancel());
 ipcMain.handle('data:sales', async (e, fresh) => { try { return await getJson(LOG_URL + '?action=sales' + (fresh ? '&fresh=1' : '') + '&t=' + Date.now(), 90000); } catch (err) { return { ok: false, error: 'Could not reach the Label Log. Check the internet.' }; } });
 ipcMain.handle('data:gatetoday', async () => { try { return await getJson(LOG_URL + '?action=gatetoday&t=' + Date.now(), 60000); } catch (err) { return { ok: false, error: String(err) }; } });
 ipcMain.handle('log:list', () => readJson(LOG_FILE(), []));
@@ -220,7 +263,7 @@ ipcMain.handle('printers:list', async () => { try { return (await win.webContent
 ipcMain.handle('program:open', (e, p) => openProgram(p));
 ipcMain.handle('file:open', (e, p) => shell.openPath(p));
 ipcMain.handle('file:show', (e, p) => { shell.showItemInFolder(p); return true; });
-ipcMain.handle('link:external', (e, url) => shell.openExternal(url));
+ipcMain.handle('link:external', (e, url) => openInChrome(url));
 ipcMain.handle('dialog:program', async () => {
   const r = await dialog.showOpenDialog(win, { title: 'Pick a program', properties: ['openFile'], filters: [{ name: 'Programs', extensions: ['exe', 'lnk', 'bat', 'cmd', 'msc'] }, { name: 'All files', extensions: ['*'] }] });
   return r.canceled ? null : r.filePaths[0];

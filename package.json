@@ -1,6 +1,6 @@
 {
   "name": "boxup-logistics-hub",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "BoxUp Logistics Hub",
   "main": "main.js",
   "scripts": {

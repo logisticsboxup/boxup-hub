@@ -1,21 +1,21 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.3",
   "date": "25 Oct 2026",
   "notes": [
     {
-      "icon": "&#127881;",
-      "title": "First version",
-      "text": "Home, all BoxUp apps as tabs, + picker, Google search, WhatsApp, settings, festival tag, updates"
+      "icon": "&#128204;",
+      "title": "Cleaner top bar",
+      "text": "The top bar now shows only the apps you open from Home or the + button. Each one has a close (x)."
     }
   ],
   "files": [
     {
       "path": "app.css",
-      "sha256": "a37c6181d0bb821c04b226e0b324f6545036914265ca391a058503ed207fa057"
+      "sha256": "d4d778b76208ff294ddf298f9076c3a6c871a2502bf6ba5a1103d24ade9d00f9"
     },
     {
       "path": "app.js",
-      "sha256": "852aa18dc82f85854af78975d1bde47affb41d23845b5286a2cdc9b4d02e9c7c"
+      "sha256": "b4657babcbc8a6134391e41d1a201b5805221c770a749e3fc0f36fa458863d69"
     },
     {
       "path": "assets/bg.jpg",
@@ -35,7 +35,7 @@
     },
     {
       "path": "index.html",
-      "sha256": "b751803508525e11c94b3cf3f97f834b1aa6ff06ce68d1606a09c7507db251a2"
+      "sha256": "bc87d3d4852bbde5c5e0dcb4cf9f3440f14127dadebe27602d1f7348515fd7e4"
     },
     {
       "path": "vendor/JsBarcode.all.min.js",
@@ -47,7 +47,7 @@
     },
     {
       "path": "version.json",
-      "sha256": "705f5e244229493ee06e69f5af0b066b5d0aa1eb92548a8d1d98bd81953371ea"
+      "sha256": "ec1aafd8760183ae2760f2dad9ee6f61f12a68d1e580938b986c8cc28e58063a"
     }
   ]
 }

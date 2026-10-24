@@ -1,3 +1,3 @@
 [
-  { "icon": "&#127881;", "title": "First version", "text": "Home, all BoxUp apps as tabs, + picker, Google search, WhatsApp, settings, festival tag, updates" }
+  { "icon": "&#128204;", "title": "Cleaner top bar", "text": "The top bar now shows only the apps you open from Home or the + button. Each one has a close (x)." }
 ]
