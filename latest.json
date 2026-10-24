@@ -19,15 +19,15 @@
     },
     {
       "path": "assets/bg.jpg",
-      "sha256": "b8f0534b47a77ed696b52de1ff28e898787327911bb5fb5a79ad5a0a80512839"
+      "sha256": "1a6a40f29e578d8f9ca2b2a6b921d7424e68803c4863cacdf8540be99a552df6"
     },
     {
       "path": "assets/icon.png",
-      "sha256": "72343d4d1f57961d7390775957476573107d5aef9d3248dd5a05fbec14e8d36b"
+      "sha256": "4eeba5dd8da1f843dfa533e8eb221ad9b60a0711d6beed86f189b201ec5b4d73"
     },
     {
       "path": "assets/logo.png",
-      "sha256": "0c8e87555fcb78139da88a8940af69ae6050b0ee8e607d239a04de3e927b92e7"
+      "sha256": "dba8dbdf98e0708fdfec17038033ffd677548bcfda309f45e26535f9ab122a95"
     },
     {
       "path": "assets/rubik-900.woff2",
