@@ -123,11 +123,12 @@ function topbar(){
   const extra = Object.keys(TABS).map(id => TABS[id].app);
   const btn = a => { const open = !!TABS[a.id], on = current === a.id;
     return `<button class="tb${on ? ' on' : ''}${open ? ' open' : ''}" data-open="${esc(a.id)}" title="${esc(a.name)}"><i style="background:${a.color}">${a.icon}</i>${esc(a.short || a.name)}${'<span class="cx" data-close="' + esc(a.id) + '" title="Close">&#10005;</span>'}</button>`; };
-  $('#topbar').innerHTML = `<img src="assets/logo.png" alt="BOXUP"><button class="tb home${current === null ? ' on' : ''}" data-act="home">&#8962; Home</button>`
+  $('#topbar').innerHTML = `<img src="assets/logo.png" alt="BOXUP">`
     + pinned.concat(extra).map(btn).join('')
-    + `<button class="tb plus" data-act="plus" title="Open an app, website or program">+</button><span class="tsp"></span>`
+    + `<span class="tsp"></span>`
     + (current && TABS[current] ? `<button class="tb ic" data-act="reload" title="Reload">&#8635;</button><button class="tb ic" data-act="print" title="Print this page">&#128424;</button>` : '')
     + `<button class="tb bell" data-act="bell" title="Updates">&#128276;${updateInfo ? '<b>1</b>' : ''}</button>`
+    + `<button class="tb dots" data-act="plus" title="BoxUp apps"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="5" cy="5" r="2.1"/><circle cx="12" cy="5" r="2.1"/><circle cx="19" cy="5" r="2.1"/><circle cx="5" cy="12" r="2.1"/><circle cx="12" cy="12" r="2.1"/><circle cx="19" cy="12" r="2.1"/><circle cx="5" cy="19" r="2.1"/><circle cx="12" cy="19" r="2.1"/><circle cx="19" cy="19" r="2.1"/></svg></button>`
     + `<button class="chip" data-act="menu"><span class="av">${esc((ME.name || 'L')[0].toUpperCase())}</span>${esc(ME.name || 'Logistics')}</button>`;
 }
 
@@ -223,8 +224,8 @@ function renderHome(){
     <div class="content">
       <div>
         ${W('nums') ? `<div class="metrics" id="nums">${metricHtml()}</div>` : ''}
-        <section class="glass panel"><div class="sh"><div><h2>Apps</h2><div class="gl"></div></div><small>${apps.length} apps</small></div>
-          <div class="qg">${apps.map(a => `<button class="quick" data-open="${esc(a.id)}" title="${esc(a.kind === 'program' ? 'Opens on this computer' : a.name)}"><span class="ico" style="background:${a.color}">${a.icon}</span>${esc(a.name)}</button>`).join('')}<button class="quick" data-act="addweb"><span class="ico addi">+</span>Add app</button></div></section>
+        ${W('apps') ? `<section class="glass panel"><div class="sh"><div><h2>Apps</h2><div class="gl"></div></div><small>${apps.length} apps</small></div>
+          <div class="qg">${apps.map(a => `<button class="quick" data-open="${esc(a.id)}" title="${esc(a.kind === 'program' ? 'Opens on this computer' : a.name)}"><span class="ico" style="background:${a.color}">${a.icon}</span>${esc(a.name)}</button>`).join('')}<button class="quick" data-act="addweb"><span class="ico addi">+</span>Add app</button></div></section>` : ''}
       </div>
       ${W('recent') ? `<section class="glass panel recent" style="align-self:start"><div class="sh"><div><h2>Recent activity</h2><div class="gl"></div></div><button class="va" data-open="orders">View all &#8594;</button></div><div id="recent">${recentHtml()}</div></section>` : ''}
     </div></div>`;
@@ -281,19 +282,22 @@ function go(v){
 function menu(){
   $('#layer').innerHTML = `<div class="scrim" data-act="closelayer"></div><div class="menu">
     <div class="pr"><span class="av">${esc((ME.name || 'L')[0].toUpperCase())}</span><div><b style="font-size:14.5px">${esc(ME.name)}</b><div style="color:var(--mu)">${esc(ME.email)}</div></div></div>
-    <div style="margin-top:8px"><div class="mi2" data-acc="Settings"><span>&#9881;</span>Settings</div></div>
+    <div style="margin-top:8px"><div class="mi2" data-acc="Home screen"><span>&#127968;</span>Home screen</div><div class="mi2" data-acc="Settings"><span>&#9881;</span>Settings</div></div>
     <div style="color:var(--mu);font-size:12px;margin:10px 4px 2px">Signed in through Chrome. To change account, use Chrome's profile menu.</div></div>`;
 }
 function plus(){
-  const it = (ic, bg, n, sub, attrs) => `<button class="it" ${attrs}><span class="ic" style="background:${bg}">${ic}</span><div><b>${esc(n)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</div></button>`;
-  const custom = (S.customApps || []);
-  $('#layer').innerHTML = `<div class="scrim" data-act="closelayer"></div><div class="pk"><input class="inp" id="pkq" placeholder="&#128269; Search apps and websites" autocomplete="off">
-    <h4>BOXUP APPS</h4><div class="grid">${BUILTIN.map(a => it(a.icon, a.color, a.short, '', `data-open="${a.id}" data-s="${esc(a.name)}"`)).join('')}</div>
-    ${custom.length ? `<h4>YOUR APPS</h4><div class="grid">${custom.map(a => it(a.icon, a.color, a.name, a.kind === 'program' ? 'Opens on your PC' : (a.url || '').replace(/^https?:\/\/(www\.)?/, '').slice(0, 26), `data-open="${esc(a.id)}" data-s="${esc(a.name)}"`)).join('')}</div>` : ''}
-    <h4>WEBSITES</h4><div class="grid">${SITES.map(([n, u, c]) => it(n[0], grad(c, c), n, u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''), `data-site="${esc(u)}" data-name="${esc(n)}" data-s="${esc(n)}"`)).join('')}</div>
-    <div class="add"><button data-act="addweb">+ Add website</button><button data-acc="Home screen">&#9881; Edit Home</button></div></div>`;
-  const q = $('#pkq'); q.focus();
-  q.addEventListener('input', () => { const v = q.value.toLowerCase(); $$('.pk .it').forEach(b => b.style.display = !v || (b.dataset.s || '').toLowerCase().includes(v) ? '' : 'none'); });
+  const fav = homeOrder().map(appById).filter(a => a && isOnHome(a));
+  const others = BUILTIN.concat(S.customApps || []).filter(a => !fav.includes(a));
+  const tile = (ic, bg, n, attrs) => `<button class="lt" ${attrs} title="${esc(n)}"><span class="ic" style="background:${bg}">${ic}</span><span class="nm">${esc(n)}</span></button>`;
+  const appT = a => tile(a.icon, a.color, a.short || a.name, `data-open="${esc(a.id)}" data-s="${esc(a.name)}"`);
+  $('#layer').innerHTML = `<div class="scrim" data-act="closelayer"></div><div class="pk lch">
+    <div class="fav"><div class="fh"><h3>Your favorites</h3><button class="pen" data-acc="Home screen" title="Choose your favorites">&#9998;</button></div>
+      <div class="lg">${fav.length ? fav.map(appT).join('') : '<div class="emp">No favorites yet. Tap &#9998; to pick apps.</div>'}</div></div>
+    ${others.length ? `<div class="lg">${others.map(appT).join('')}</div>` : ''}
+    <h4>WEBSITES</h4><div class="lg">${SITES.map(([n, u, c]) => tile(n[0], grad(c, c), n, `data-site="${esc(u)}" data-name="${esc(n)}" data-s="${esc(n)}"`)).join('')}</div>
+    <div class="add"><button data-act="addweb">+ Add website</button></div></div>`;
+  const q = $('#pkq'); if(!q) return; q.focus();
+  q.addEventListener('input', () => { const v = q.value.toLowerCase(); $$('.pk .lt').forEach(b => b.style.display = !v || (b.dataset.s || '').toLowerCase().includes(v) ? '' : 'none'); });
 }
 function addAppDialog(kind, preset){
   preset = preset || {};
@@ -342,7 +346,7 @@ const PAGE = {
       <div class="card"><div class="lab" style="margin-top:0">Apps on Home <span style="text-transform:none;letter-spacing:0;font-weight:500">(use &#9650; &#9660; to change order)</span></div>${rows}
         <div style="display:flex;gap:12px;margin-top:18px"><button class="btn dash" style="flex:1" data-act="addweb">+ Add website</button></div></div>
       <div><div class="card"><div class="lab" style="margin-top:0">Widgets on Home</div>
-        ${row('Search bar', 'Orders and Google search', tg('w:search', W('search')))}${row("Today's numbers", 'Labels printed, dispatched, pending', tg('w:nums', W('nums')))}${row('Recent activity', 'Latest orders and their status', tg('w:recent', W('recent')))}</div>
+        ${row('Apps', 'App shortcuts on Home', tg('w:apps', W('apps')))}${row('Search bar', 'Orders and Google search', tg('w:search', W('search')))}${row("Today's numbers", 'Labels printed, dispatched, pending', tg('w:nums', W('nums')))}${row('Recent activity', 'Latest orders and their status', tg('w:recent', W('recent')))}</div>
       <div class="card" style="margin-top:22px"><div class="lab" style="margin-top:0">Background</div><div class="bgs">${bgs.map(([k, b]) => `<button class="${bg === k ? 'on' : ''}" data-act="hsbg" data-k="${k}" style="background:${b}"></button>`).join('')}<button class="btn dash" style="flex:1 1 0;height:76px" data-act="hsupload">+ Upload</button></div>
         <div class="lab">Card see-through</div><input type="range" min="0.25" max="0.95" step="0.05" value="${h.glass == null ? .55 : h.glass}" id="glass" style="width:100%;accent-color:#0d7650"></div></div></div>`;
   },

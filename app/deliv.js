@@ -17,14 +17,23 @@
     const st = {data:null, tab:null, q:'', fState:'', fStatus:'', fDate:'', sel:new Set(), loading:false, err:'', limit:PAGE, menu:null};
     el.className = 'screen dv';
 
-    async function load(force){
-      if(st.loading) return; st.loading = true; st.err = ''; draw();
+    let sig = '';
+    async function load(force, silent){
+      if(st.loading) return; st.loading = true;
+      if(!silent){ st.err = ''; draw(); }
       try {
         const d = await H.data.deliv(force);
         if(!d || !d.ok) throw new Error((d && d.error) || 'Could not load the Delivery Tracker');
-        st.data = d;
+        const ns = JSON.stringify(d.tabs);
+        if(silent){
+          st.loading = false;
+          const typing = document.activeElement && el.contains(document.activeElement) && /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
+          if(ns === sig || typing || st.menu) { if(st.data) st.data.at = d.at; const lv = el.querySelector('.dv-live'); if(lv && ns === sig) lv.textContent = 'Live from your sheet · updated ' + new Date(d.at || Date.now()).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'}); return; }
+          sig = ns; st.data = d; const y = el.scrollTop; draw(); el.scrollTop = y; return;
+        }
+        sig = ns; st.data = d;
         if(!st.tab || (st.tab !== ALL && !d.tabs.some(t => t.name === st.tab))) st.tab = ALL;
-      } catch(e){ st.err = String(e.message || e); }
+      } catch(e){ st.loading = false; if(silent) return; st.err = String(e.message || e); }
       st.loading = false; draw();
     }
     const ALL = '__all';
@@ -204,7 +213,7 @@
       if(st.menu && !e.target.closest('#dvmenu') && !e.target.closest('[data-dvpick]')) closeMenu();
     });
     el.addEventListener('scroll', closeMenu);
-    let timer = setInterval(() => { if(!el.classList.contains('off') && !st.loading && !st.menu && !document.getElementById('dvmenu')) load(true); }, 120000);
+    let timer = setInterval(() => { if(!el.classList.contains('off') && !st.loading && !st.menu && !document.getElementById('dvmenu') && !document.hidden) load(true, true); }, 10000);   // live: every 10 seconds
     el.reload = () => load(true);
     el.print = () => { window.print(); return Promise.resolve(); };
     el.stop = () => clearInterval(timer);
