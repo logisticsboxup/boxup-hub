@@ -39,7 +39,7 @@
   "files": [
     {
       "path": "app.css",
-      "sha256": "50fa84623a834697ef5a5d64dbc9ce46f59a820632c2c67b1091be412e3ab71d"
+      "sha256": "9a7c4545c44e162145e56018b5cc5bbf2efc242e575646a5fda28ab5c5a2210c"
     },
     {
       "path": "app.js",
@@ -63,35 +63,35 @@
     },
     {
       "path": "assets/themes/aurora.jpg",
-      "sha256": "67f83b4b74ee40cdda91301557c04c24902bfcba44d7421781f01ad1a2c10388"
+      "sha256": "37ab7f9ce47fb8d12262c15e9e950416b028b2cde504ef0707d6baef5eb14e33"
     },
     {
       "path": "assets/themes/dark.jpg",
-      "sha256": "8853c3ab6da43f9096800b224f5de98706ceddb985f82968d9173339e7570ea7"
+      "sha256": "684685a30d26c125fead7aa461dbf8cce79a32150c66c17c06e31f26bb3ccd0b"
     },
     {
       "path": "assets/themes/forest.jpg",
-      "sha256": "7f06e85d0abcb9728a76df80d9cb3db45f768e569c1b9c671136ec093be0dfe0"
+      "sha256": "e986e358cb75ab78b57be606ccecc9b0a3fff7ddbf9b020bc7c507d0151b3f14"
     },
     {
       "path": "assets/themes/light.jpg",
-      "sha256": "bdc392510211a0c62ab4bdb3853e9600edff149811f839031ea791f2805d512c"
+      "sha256": "28b90aaf009f95e0354f25ad8ec740288bfddf99f2b5c1bd495cd8fde42aafd3"
     },
     {
       "path": "assets/themes/minimal.jpg",
-      "sha256": "cb32ae4a70ee5257efcce65ee3bc2a7a6a3526ceea5cc95140ec76d6d6c32c9b"
+      "sha256": "30fa87e10d173f91599ecdabde57adebf928e89b46c365634829ccf5d412475c"
     },
     {
       "path": "assets/themes/nature.jpg",
-      "sha256": "4b199dd8100fa16c8554fa112b41d84b243f5ffb90c776287f9e2f871b90558e"
+      "sha256": "cba84be0d808e1abffb21bba2c7f48722f24163a4cd8fd30fd641997c53f2c1e"
     },
     {
       "path": "assets/themes/ocean.jpg",
-      "sha256": "a039532baa3b72a97b215a121317a09bf7fc7fb79eb4537057f0aa3ca6242fda"
+      "sha256": "38ca78a35969be68c4ef8ef9ad04a696929e9304e3f505ab5e4146ad832c09d2"
     },
     {
       "path": "assets/themes/sunset.jpg",
-      "sha256": "6e46bbc44aee5ace24604efa6bd6593e98d5087d104906b009f992b9f2e5cc8f"
+      "sha256": "06047e6a35f7fcb6db62482f0b4d1779657b794bb8838e9d0fc00383d886c2db"
     },
     {
       "path": "deliv.js",
