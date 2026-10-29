@@ -213,7 +213,14 @@
       if(st.menu && !e.target.closest('#dvmenu') && !e.target.closest('[data-dvpick]')) closeMenu();
     });
     el.addEventListener('scroll', closeMenu);
-    let timer = setInterval(() => { if(!el.classList.contains('off') && !st.loading && !st.menu && !document.getElementById('dvmenu') && !document.hidden) load(true, true); }, 10000);   // live: every 10 seconds
+    let every = () => { const v = ctx.every ? ctx.every() : 30000; return Math.max(10000, v || 30000); };
+    let tick = 0;
+    let timer = setInterval(() => {
+      tick += 5000;
+      if(tick < every()) return;
+      tick = 0;
+      if(!el.classList.contains('off') && !st.loading && !st.menu && !document.getElementById('dvmenu') && !document.hidden) load(true, true);
+    }, 5000);   // checks every 5s, reloads on the chosen gap
     el.reload = () => load(true);
     el.print = () => { window.print(); return Promise.resolve(); };
     el.stop = () => clearInterval(timer);

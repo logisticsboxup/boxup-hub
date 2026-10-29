@@ -1,3 +1,22 @@
 [
-  { "icon": "&#128204;", "title": "Cleaner top bar", "text": "The top bar now shows only the apps you open from Home or the + button. Each one has a close (x)." }
+  {
+    "icon": "&#127912;",
+    "title": "8 Home themes",
+    "text": "Light, Dark, Nature, Minimal, Ocean, Sunset, Forest and Aurora backgrounds, picked in Home screen settings next to the new Auto refresh dropdown (10 seconds up to once a day). Home also has a switch to hide the Apps box."
+  },
+  {
+    "icon": "&#9889;",
+    "title": "Delivery Tracker keeps itself live",
+    "text": "It refreshes quietly on your chosen gap without losing your place or what you are typing."
+  },
+  {
+    "icon": "&#128203;",
+    "title": "Sheets in their own window",
+    "text": "Label Log, Delivery Tracker and Gmail open in a clean Chrome window with no tabs or address bar, already signed in."
+  },
+  {
+    "icon": "&#9881;",
+    "title": "Bigger updates without reinstalling",
+    "text": "From now on the program's core can also update through Update now."
+  }
 ]

@@ -17,6 +17,10 @@ const BUILTIN = [
   {id:'wa', name:'WhatsApp', short:'WhatsApp', icon:'&#128172;', color:grad('#3ddc84','#128c4a'), url:'https://web.whatsapp.com/'},
   {id:'google', name:'Google', short:'Google', icon:'G', color:grad('#5e97f6','#2a56c6'), url:'https://www.google.com/', homeOff:true},
 ];
+const THEMES = [
+  ['light','Light'], ['dark','Dark'], ['nature','Nature'], ['minimal','Minimal'],
+  ['ocean','Ocean'], ['sunset','Sunset'], ['forest','Forest'], ['aurora','Aurora'],
+];
 const SITES = [
   ['DTDC', 'https://www.dtdc.in/', '#ef5350'], ['Porter', 'https://porter.in/', '#42a5f5'], ['Shadowfax', 'https://www.shadowfax.in/', '#43a047'],
   ['Shree Anjani', 'https://shreeanjani.co.in/', '#ff7043'], ['Zoho Inventory', 'https://inventory.zoho.in/', '#e53935'], ['Gmail', 'https://mail.google.com/', '#c62828'],
@@ -123,7 +127,7 @@ function topbar(){
   const extra = Object.keys(TABS).map(id => TABS[id].app);
   const btn = a => { const open = !!TABS[a.id], on = current === a.id;
     return `<button class="tb${on ? ' on' : ''}${open ? ' open' : ''}" data-open="${esc(a.id)}" title="${esc(a.name)}"><i style="background:${a.color}">${a.icon}</i>${esc(a.short || a.name)}${'<span class="cx" data-close="' + esc(a.id) + '" title="Close">&#10005;</span>'}</button>`; };
-  $('#topbar').innerHTML = `<img src="assets/logo.png" alt="BOXUP">`
+  $('#topbar').innerHTML = `<button class="lgo${current === null ? ' on' : ''}" data-act="home" title="Home"><img src="assets/logo.png" alt="BOXUP"></button>`
     + pinned.concat(extra).map(btn).join('')
     + `<span class="tsp"></span>`
     + (current && TABS[current] ? `<button class="tb ic" data-act="reload" title="Reload">&#8635;</button><button class="tb ic" data-act="print" title="Print this page">&#128424;</button>` : '')
@@ -213,8 +217,9 @@ function renderHome(){
   const glass = h.glass == null ? .55 : h.glass;
   document.documentElement.style.setProperty('--glass', glass);
   const bgCss = bg === 'green' ? 'linear-gradient(135deg,#0b281c,#164631)' : bg === 'blue' ? 'linear-gradient(135deg,#1f2a44,#3b4a6b)' : bg === 'custom' && h.bgData ? `linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.35)),url(${h.bgData}) center/cover` : '';
+  const th = THEMES.some(t => t[0] === bg) ? bg : '';
   const apps = homeOrder().map(appById).filter(a => a && isOnHome(a));
-  $('#home').innerHTML = `<div class="bgwrap${bg !== 'photo' ? ' plain' : ''}" style="${bgCss ? 'background:' + bgCss + ';background-attachment:fixed' : ''}">
+  $('#home').innerHTML = `<div class="bgwrap${bg !== 'photo' ? ' plain' : ''}${th ? ' th' : ''}"${th ? ` data-th="${th}"` : ''} style="${!th && bgCss ? 'background:' + bgCss + ';background-attachment:fixed' : ''}">
     <div class="hero">
       <img class="hlogo" src="assets/logo.png" alt="BOXUP"><span class="tag">Delivering Thoughtful Moments</span>
       <div class="htitle"><h1>Your Logistics<br>Command Center</h1><p>Everything you need to move every shipment forward.</p></div>
@@ -282,7 +287,7 @@ function go(v){
 function menu(){
   $('#layer').innerHTML = `<div class="scrim" data-act="closelayer"></div><div class="menu">
     <div class="pr"><span class="av">${esc((ME.name || 'L')[0].toUpperCase())}</span><div><b style="font-size:14.5px">${esc(ME.name)}</b><div style="color:var(--mu)">${esc(ME.email)}</div></div></div>
-    <div style="margin-top:8px"><div class="mi2" data-acc="Home screen"><span>&#127968;</span>Home screen</div><div class="mi2" data-acc="Settings"><span>&#9881;</span>Settings</div></div>
+    <div style="margin-top:8px"><div class="mi2" data-acc="Settings"><span>&#9881;</span>Settings</div></div>
     <div style="color:var(--mu);font-size:12px;margin:10px 4px 2px">Signed in through Chrome. To change account, use Chrome's profile menu.</div></div>`;
 }
 function plus(){
@@ -334,7 +339,7 @@ const PAGE = {
       ${row('Theme', 'Light or dark look for the program', sel('theme', S.theme || 'light', [['light','Light'],['dark','Dark']]))}
       ${row('Downloads', 'Label PDFs, manifests and Excel files from BoxUp pages are saved in Downloads › BoxUp', '<button class="btn" data-act="showdl">Open Downloads</button>')}
       ${row('Gate scan alerts', 'Pop-up when a scan at the gate is wrong (not found, already out)', tg('gateAlerts', S.gateAlerts !== false))}
-      ${row('Auto refresh', "How often Home's numbers refresh", sel('refresh', S.refresh || 30, [[10,'Every 10 seconds'],[30,'Every 30 seconds'],[60,'Every minute'],[300,'Every 5 minutes']]))}</div>`;
+      ${row('Auto refresh', "How often Home's numbers and the Delivery Tracker refresh", sel('refresh', S.refresh || 30, [[10,'Every 10 seconds'],[30,'Every 30 seconds'],[60,'Every minute'],[300,'Every 5 minutes'],[900,'Every 15 minutes'],[1800,'Every 30 minutes'],[86400,'Once a day']]))}</div>`;
   },
   async 'Home screen'(){
     const h = S.home || {}, bg = h.bg || 'photo';
@@ -347,7 +352,10 @@ const PAGE = {
         <div style="display:flex;gap:12px;margin-top:18px"><button class="btn dash" style="flex:1" data-act="addweb">+ Add website</button></div></div>
       <div><div class="card"><div class="lab" style="margin-top:0">Widgets on Home</div>
         ${row('Apps', 'App shortcuts on Home', tg('w:apps', W('apps')))}${row('Search bar', 'Orders and Google search', tg('w:search', W('search')))}${row("Today's numbers", 'Labels printed, dispatched, pending', tg('w:nums', W('nums')))}${row('Recent activity', 'Latest orders and their status', tg('w:recent', W('recent')))}</div>
-      <div class="card" style="margin-top:22px"><div class="lab" style="margin-top:0">Background</div><div class="bgs">${bgs.map(([k, b]) => `<button class="${bg === k ? 'on' : ''}" data-act="hsbg" data-k="${k}" style="background:${b}"></button>`).join('')}<button class="btn dash" style="flex:1 1 0;height:76px" data-act="hsupload">+ Upload</button></div>
+      <div class="card" style="margin-top:22px"><div class="labrow"><div class="lab" style="margin:0">Theme</div>
+        <label class="arf">Auto refresh ${sel('refresh', S.refresh || 30, [[10,'Every 10 seconds'],[30,'Every 30 seconds'],[60,'Every minute'],[300,'Every 5 minutes'],[900,'Every 15 minutes'],[1800,'Every 30 minutes'],[86400,'Once a day']])}</label></div>
+        <div class="thg">${THEMES.map(([k, n]) => `<button class="${bg === k ? 'on' : ''}" data-act="hsbg" data-k="${k}" style="background-image:url(assets/themes/${k}.jpg)">${n}</button>`).join('')}</div>
+        <div class="lab">Picture background</div><div class="bgs">${bgs.map(([k, b]) => `<button class="${bg === k ? 'on' : ''}" data-act="hsbg" data-k="${k}" style="background:${b}"></button>`).join('')}<button class="btn dash" style="flex:1 1 0;height:76px" data-act="hsupload">+ Upload</button></div>
         <div class="lab">Card see-through</div><input type="range" min="0.25" max="0.95" step="0.05" value="${h.glass == null ? .55 : h.glass}" id="glass" style="width:100%;accent-color:#0d7650"></div></div></div>`;
   },
   async 'Updates'(){
@@ -604,7 +612,7 @@ function enterDelivery(){
   document.title = 'Delivery Tracker · BoxUp';
   const el = document.createElement('div'); $('#tabs').appendChild(el);
   const a = appById('deliv');
-  window.DelivScreen.mount(el, {hub:H, toast, sheetUrl:a.url, templates:() => S.waTemplates || DEFAULT_TEMPLATES,
+  window.DelivScreen.mount(el, {hub:H, toast, sheetUrl:a.url, every:() => (S.refresh || 30) * 1000, templates:() => S.waTemplates || DEFAULT_TEMPLATES,
     openWhatsApp:(phone, text) => open('wa', {url:'https://web.whatsapp.com/send?' + (phone ? 'phone=' + phone + '&' : '') + 'text=' + encodeURIComponent(text)}), dialog});
 }
 (async function boot(){

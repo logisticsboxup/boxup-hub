@@ -1,21 +1,49 @@
 {
-  "version": "1.0.3",
-  "date": "25 Oct 2026",
+  "version": "1.0.5",
+  "core": {
+    "version": "1.0.4",
+    "files": [
+      {
+        "path": "main.js",
+        "sha256": "4508db638334cffeae72841b331a2487909018cf07af0e2f27080c70bc5b2dd6"
+      },
+      {
+        "path": "preload.js",
+        "sha256": "0b48f7a28583715511334c1c65a6f5c51bf929191ba0ca2ba70c7050e182d1cb"
+      }
+    ]
+  },
+  "date": "29 Oct 2026",
   "notes": [
     {
-      "icon": "&#128204;",
-      "title": "Cleaner top bar",
-      "text": "The top bar now shows only the apps you open from Home or the + button. Each one has a close (x)."
+      "icon": "&#127912;",
+      "title": "8 Home themes",
+      "text": "Light, Dark, Nature, Minimal, Ocean, Sunset, Forest and Aurora backgrounds, picked in Home screen settings next to the new Auto refresh dropdown (10 seconds up to once a day). Home also has a switch to hide the Apps box."
+    },
+    {
+      "icon": "&#9889;",
+      "title": "Delivery Tracker keeps itself live",
+      "text": "It refreshes quietly on your chosen gap without losing your place or what you are typing."
+    },
+    {
+      "icon": "&#128203;",
+      "title": "Sheets in their own window",
+      "text": "Label Log, Delivery Tracker and Gmail open in a clean Chrome window with no tabs or address bar, already signed in."
+    },
+    {
+      "icon": "&#9881;",
+      "title": "Bigger updates without reinstalling",
+      "text": "From now on the program's core can also update through Update now."
     }
   ],
   "files": [
     {
       "path": "app.css",
-      "sha256": "d4d778b76208ff294ddf298f9076c3a6c871a2502bf6ba5a1103d24ade9d00f9"
+      "sha256": "50fa84623a834697ef5a5d64dbc9ce46f59a820632c2c67b1091be412e3ab71d"
     },
     {
       "path": "app.js",
-      "sha256": "b4657babcbc8a6134391e41d1a201b5805221c770a749e3fc0f36fa458863d69"
+      "sha256": "a71cc1a78ec1f9a32310f9c8634f6a101249af24d3b3595d034a87577737ef75"
     },
     {
       "path": "assets/bg.jpg",
@@ -34,8 +62,44 @@
       "sha256": "9ab80489aea97335ef86ea6d7386e5ffbf57a2abeeaea8da6f84c694c87792ad"
     },
     {
+      "path": "assets/themes/aurora.jpg",
+      "sha256": "67f83b4b74ee40cdda91301557c04c24902bfcba44d7421781f01ad1a2c10388"
+    },
+    {
+      "path": "assets/themes/dark.jpg",
+      "sha256": "8853c3ab6da43f9096800b224f5de98706ceddb985f82968d9173339e7570ea7"
+    },
+    {
+      "path": "assets/themes/forest.jpg",
+      "sha256": "7f06e85d0abcb9728a76df80d9cb3db45f768e569c1b9c671136ec093be0dfe0"
+    },
+    {
+      "path": "assets/themes/light.jpg",
+      "sha256": "bdc392510211a0c62ab4bdb3853e9600edff149811f839031ea791f2805d512c"
+    },
+    {
+      "path": "assets/themes/minimal.jpg",
+      "sha256": "cb32ae4a70ee5257efcce65ee3bc2a7a6a3526ceea5cc95140ec76d6d6c32c9b"
+    },
+    {
+      "path": "assets/themes/nature.jpg",
+      "sha256": "4b199dd8100fa16c8554fa112b41d84b243f5ffb90c776287f9e2f871b90558e"
+    },
+    {
+      "path": "assets/themes/ocean.jpg",
+      "sha256": "a039532baa3b72a97b215a121317a09bf7fc7fb79eb4537057f0aa3ca6242fda"
+    },
+    {
+      "path": "assets/themes/sunset.jpg",
+      "sha256": "6e46bbc44aee5ace24604efa6bd6593e98d5087d104906b009f992b9f2e5cc8f"
+    },
+    {
+      "path": "deliv.js",
+      "sha256": "a5e4c8d6a950fb6e3b0c01943ee206f4615d49603338e808265f6552f2253f2d"
+    },
+    {
       "path": "index.html",
-      "sha256": "bc87d3d4852bbde5c5e0dcb4cf9f3440f14127dadebe27602d1f7348515fd7e4"
+      "sha256": "e7646585a053de17dd89a2ddb3452346c4126e52771a078841d6f286c5c922f3"
     },
     {
       "path": "vendor/JsBarcode.all.min.js",
@@ -47,7 +111,7 @@
     },
     {
       "path": "version.json",
-      "sha256": "ec1aafd8760183ae2760f2dad9ee6f61f12a68d1e580938b986c8cc28e58063a"
+      "sha256": "fcae23f143de618f2ba36cfbbd4e47c4762e9ac86b0b45a461f531855b9d7d23"
     }
   ]
 }

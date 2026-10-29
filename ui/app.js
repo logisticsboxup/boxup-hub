@@ -13,9 +13,13 @@ const BUILTIN = [
   {id:'gate', name:'Gate Scanner', short:'Gate Scanner', icon:'&#128737;', color:grad('#e7ad3e','#88560b'), url:'https://logisticsboxup.github.io/boxup-gate/'},
   {id:'gsys', name:'Gate System', short:'Gate System', icon:'&#128202;', color:grad('#a75be6','#6023ae'), url:'https://logisticsboxup.github.io/boxup-gate/dashboard.html'},
   {id:'log', name:'Label Log', short:'Label Log', icon:'&#128203;', color:grad('#36c79d','#07805e'), url:'https://docs.google.com/spreadsheets/d/17IMy6t47Y0q895rvQsAEdgsGM6w_2lSDWso8BIWHEtg/edit'},
-  {id:'deliv', name:'Delivery Tracker', short:'Delivery', icon:'&#9989;', color:grad('#ff9b2d','#c85b00'), url:'https://docs.google.com/spreadsheets/d/1WDZMJaT7Lr8rUEEFwgQwX7Khzb7D_OGaQUwKIwmIk_Q/edit'},
+  {id:'deliv', name:'Delivery Tracker', short:'Delivery', icon:'&#9989;', color:grad('#ff9b2d','#c85b00'), url:'https://docs.google.com/spreadsheets/d/1WDZMJaT7Lr8rUEEFwgQwX7Khzb7D_OGaQUwKIwmIk_Q/edit', screen:'deliv'},
   {id:'wa', name:'WhatsApp', short:'WhatsApp', icon:'&#128172;', color:grad('#3ddc84','#128c4a'), url:'https://web.whatsapp.com/'},
   {id:'google', name:'Google', short:'Google', icon:'G', color:grad('#5e97f6','#2a56c6'), url:'https://www.google.com/', homeOff:true},
+];
+const THEMES = [
+  ['light','Light'], ['dark','Dark'], ['nature','Nature'], ['minimal','Minimal'],
+  ['ocean','Ocean'], ['sunset','Sunset'], ['forest','Forest'], ['aurora','Aurora'],
 ];
 const SITES = [
   ['DTDC', 'https://www.dtdc.in/', '#ef5350'], ['Porter', 'https://porter.in/', '#42a5f5'], ['Shadowfax', 'https://www.shadowfax.in/', '#43a047'],
@@ -134,7 +138,7 @@ function topbar(){
   const extra = Object.keys(TABS).map(id => TABS[id].app);
   const btn = a => { const open = !!TABS[a.id], on = current === a.id;
     return `<button class="tb${on ? ' on' : ''}${open ? ' open' : ''}" data-open="${esc(a.id)}" title="${esc(a.name)}"><i style="background:${a.color}">${a.icon}</i>${esc(a.short || a.name)}${'<span class="cx" data-close="' + esc(a.id) + '" title="Close">&#10005;</span>'}</button>`; };
-  $('#topbar').innerHTML = `<img src="assets/logo.png" alt="BOXUP"><button class="tb home${current === null ? ' on' : ''}" data-act="home">&#8962; Home</button>`
+  $('#topbar').innerHTML = `<button class="lgo${current === null ? ' on' : ''}" data-act="home" title="Home"><img src="assets/logo.png" alt="BOXUP"></button><button class="tb home${current === null ? ' on' : ''}" data-act="home">&#8962; Home</button>`
     + pinned.concat(extra).map(btn).join('')
     + `<button class="tb plus" data-act="plus" title="Open an app, website or program">+</button><span class="tsp"></span>`
     + (current && TABS[current] ? `<button class="tb ic" data-act="reload" title="Reload">&#8635;</button><button class="tb ic" data-act="print" title="Print this page">&#128424;</button>` : '')
@@ -147,8 +151,21 @@ function open(id, opts){
   opts = opts || {};
   const a = appById(id) || (TABS[id] && TABS[id].app) || opts.app;
   if(!a) return;
+  if(a.screen && window.DelivScreen && H.data.deliv){
+    if(!TABS[id]){
+      const el = document.createElement('div');
+      const bar = document.createElement('div'); bar.className = 'wvload hide';
+      $('#tabs').appendChild(el); $('#tabs').appendChild(bar);
+      TABS[id] = {app:a, wv:el, bar, screen:true};
+      window.DelivScreen.mount(el, {hub:H, toast, sheetUrl:a.url, every:() => (S.refresh || 30) * 1000, templates:() => S.waTemplates || DEFAULT_TEMPLATES,
+        openWhatsApp:(phone, text) => open('wa', {url:'https://web.whatsapp.com/send?' + (phone ? 'phone=' + phone + '&' : '') + 'text=' + encodeURIComponent(text)}),
+        dialog});
+      H.log.add(a.name, 'Opened');
+    }
+    activate(id); return;
+  }
   const u0 = opts.url || a.url || '';
-  if(/^https:\/\/(docs|mail|drive|sheets)\.google\.com\//i.test(u0)){ H.external(u0); H.log.add(a.name, 'Opened in Chrome'); toast(a.name + ' opened in Chrome'); return; }
+  if(/^https:\/\/(docs|mail|drive|sheets)\.google\.com\//i.test(u0)){ (H.externalApp || H.external)(u0); H.log.add(a.name, 'Opened in Chrome'); toast(a.name + ' opened in its own Chrome window'); return; }
   if(a.kind === 'program'){ H.openProgram(a.path); H.log.add('Program', 'Opened ' + a.name); toast('Opening ' + a.name + ' on this computer'); return; }
   let t = TABS[id];
   if(!t){
@@ -178,6 +195,7 @@ function activate(id){
 }
 function closeTab(id){
   const t = TABS[id]; if(!t) return;
+  if(t.wv.stop) t.wv.stop();
   t.wv.remove(); t.bar.remove(); delete TABS[id];
   if(current === id) goHome(); else topbar();
 }
@@ -236,8 +254,9 @@ function renderHome(){
   const glass = h.glass == null ? .55 : h.glass;
   document.documentElement.style.setProperty('--glass', glass);
   const bgCss = bg === 'green' ? 'linear-gradient(135deg,#0b281c,#164631)' : bg === 'blue' ? 'linear-gradient(135deg,#1f2a44,#3b4a6b)' : bg === 'custom' && h.bgData ? `linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.35)),url(${h.bgData}) center/cover` : '';
+  const th = THEMES.some(t => t[0] === bg) ? bg : '';
   const apps = homeOrder().map(appById).filter(a => a && isOnHome(a));
-  $('#home').innerHTML = `<div class="bgwrap${bg !== 'photo' ? ' plain' : ''}" style="${bgCss ? 'background:' + bgCss + ';background-attachment:fixed' : ''}">
+  $('#home').innerHTML = `<div class="bgwrap${bg !== 'photo' ? ' plain' : ''}${th ? ' th' : ''}"${th ? ` data-th="${th}"` : ''} style="${!th && bgCss ? 'background:' + bgCss + ';background-attachment:fixed' : ''}">
     <div class="hero">
       <img class="hlogo" src="assets/logo.png" alt="BOXUP"><span class="tag">Delivering Thoughtful Moments</span>
       <div class="htitle"><h1>Your Logistics<br>Command Center</h1><p>Everything you need to move every shipment forward.</p></div>
@@ -247,8 +266,8 @@ function renderHome(){
     <div class="content">
       <div>
         ${W('nums') ? `<div class="metrics" id="nums">${metricHtml()}</div>` : ''}
-        <section class="glass panel"><div class="sh"><div><h2>Apps</h2><div class="gl"></div></div><small>${apps.length} apps</small></div>
-          <div class="qg">${apps.map(a => `<button class="quick" data-open="${esc(a.id)}" title="${esc(a.kind === 'program' ? 'Opens on this computer' : a.name)}"><span class="ico" style="background:${a.color}">${a.icon}</span>${esc(a.name)}</button>`).join('')}<button class="quick" data-act="addweb"><span class="ico addi">+</span>Add app</button></div></section>
+        ${W('apps') ? `<section class="glass panel"><div class="sh"><div><h2>Apps</h2><div class="gl"></div></div><small>${apps.length} apps</small></div>
+          <div class="qg">${apps.map(a => `<button class="quick" data-open="${esc(a.id)}" title="${esc(a.kind === 'program' ? 'Opens on this computer' : a.name)}"><span class="ico" style="background:${a.color}">${a.icon}</span>${esc(a.name)}</button>`).join('')}<button class="quick" data-act="addweb"><span class="ico addi">+</span>Add app</button></div></section>` : ''}
       </div>
       ${W('recent') ? `<section class="glass panel recent" style="align-self:start"><div class="sh"><div><h2>Recent activity</h2><div class="gl"></div></div><button class="va" data-open="orders">View all &#8594;</button></div><div id="recent">${recentHtml()}</div></section>` : ''}
     </div></div>`;
@@ -358,7 +377,7 @@ const PAGE = {
       ${row('Start page', 'What opens when the program starts', sel('startPage', S.startPage || 'home', startOpts))}
       ${row('Start with Windows', 'Open the program when the PC starts', tg('startWithWindows', !!S.startWithWindows))}
       ${row('Gate scan alerts', 'Pop-up when a scan at the gate is wrong (not found, already out)', tg('gateAlerts', S.gateAlerts !== false))}
-      ${row('Auto refresh', "How often Home's numbers refresh", sel('refresh', S.refresh || 30, [[10,'Every 10 seconds'],[30,'Every 30 seconds'],[60,'Every minute'],[300,'Every 5 minutes']]))}</div>`;
+      ${row('Auto refresh', "How often Home's numbers and the Delivery Tracker refresh", sel('refresh', S.refresh || 30, [[10,'Every 10 seconds'],[30,'Every 30 seconds'],[60,'Every minute'],[300,'Every 5 minutes'],[900,'Every 15 minutes'],[1800,'Every 30 minutes'],[86400,'Once a day']]))}</div>`;
   },
   async 'Home screen'(){
     const h = S.home || {}, bg = h.bg || 'photo';
@@ -370,8 +389,11 @@ const PAGE = {
       <div class="card"><div class="lab" style="margin-top:0">Apps on Home <span style="text-transform:none;letter-spacing:0;font-weight:500">(use &#9650; &#9660; to change order)</span></div>${rows}
         <div style="display:flex;gap:12px;margin-top:18px"><button class="btn dash" style="flex:1" data-act="addweb">+ Add website</button><button class="btn dash" style="flex:1" data-act="addprog">+ Add program (.exe)</button></div></div>
       <div><div class="card"><div class="lab" style="margin-top:0">Widgets on Home</div>
-        ${row('Search bar', 'Orders and Google search', tg('w:search', W('search')))}${row("Today's numbers", 'Labels printed, dispatched, pending', tg('w:nums', W('nums')))}${row('Recent activity', 'Latest orders and their status', tg('w:recent', W('recent')))}</div>
-      <div class="card" style="margin-top:22px"><div class="lab" style="margin-top:0">Background</div><div class="bgs">${bgs.map(([k, b]) => `<button class="${bg === k ? 'on' : ''}" data-act="hsbg" data-k="${k}" style="background:${b}"></button>`).join('')}<button class="btn dash" style="flex:1 1 0;height:76px" data-act="hsupload">+ Upload</button></div>
+        ${row('Apps', 'App shortcuts on Home', tg('w:apps', W('apps')))}${row('Search bar', 'Orders and Google search', tg('w:search', W('search')))}${row("Today's numbers", 'Labels printed, dispatched, pending', tg('w:nums', W('nums')))}${row('Recent activity', 'Latest orders and their status', tg('w:recent', W('recent')))}</div>
+      <div class="card" style="margin-top:22px"><div class="labrow"><div class="lab" style="margin:0">Theme</div>
+        <label class="arf">Auto refresh ${sel('refresh', S.refresh || 30, [[10,'Every 10 seconds'],[30,'Every 30 seconds'],[60,'Every minute'],[300,'Every 5 minutes'],[900,'Every 15 minutes'],[1800,'Every 30 minutes'],[86400,'Once a day']])}</label></div>
+        <div class="thg">${THEMES.map(([k, n]) => `<button class="${bg === k ? 'on' : ''}" data-act="hsbg" data-k="${k}" style="background-image:url(assets/themes/${k}.jpg)">${n}</button>`).join('')}</div>
+        <div class="lab">Picture background</div><div class="bgs">${bgs.map(([k, b]) => `<button class="${bg === k ? 'on' : ''}" data-act="hsbg" data-k="${k}" style="background:${b}"></button>`).join('')}<button class="btn dash" style="flex:1 1 0;height:76px" data-act="hsupload">+ Upload</button></div>
         <div class="lab">Card see-through</div><input type="range" min="0.25" max="0.95" step="0.05" value="${h.glass == null ? .55 : h.glass}" id="glass" style="width:100%;accent-color:#0d7650"></div></div></div>`;
   },
   async 'Updates'(){
