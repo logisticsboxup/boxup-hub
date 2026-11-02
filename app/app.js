@@ -223,6 +223,7 @@ function renderHome(){
     <div class="hero">
       <img class="hlogo" src="assets/logo.png" alt="BOXUP"><span class="tag">Delivering Thoughtful Moments</span>
       <div class="htitle"><h1>Your Logistics<br>Command Center</h1><p>Everything you need to move every shipment forward.</p></div>
+      <div class="hclk"><div class="t"><span id="hcT">--:--</span><small id="hcS">:--</small></div><div class="d" id="hcD"></div><div class="wx hide" id="hcW"></div></div>
       ${W('search') ? `<div class="srch" id="srch"><div class="tgl"><button class="${mode === 'orders' ? 'on' : ''}" data-mode="orders">&#128230; Orders</button><button class="${mode === 'google' ? 'on' : ''}" data-mode="google">G&nbsp; Google</button></div>
         <input id="q" placeholder="${mode === 'orders' ? 'Search Order ID, AWB, company, name or phone' : 'Search Google'}" autocomplete="off"><span class="hint">${mode === 'orders' ? 'opens in Order Tracker' : 'opens a Google tab'}</span><div class="sug hide" id="sug"></div></div>` : ''}
     </div>
@@ -623,3 +624,43 @@ function enterDelivery(){
   else { show('login'); afterAuth(r); }
   setInterval(async () => { const c = await H.update.check(); if(c.available && !updateInfo){ updateInfo = c; topbar(); if(S.notifyUpdates !== false && !DELIV_MODE) updateNotice(); } }, 10 * 60 * 1000);
 })();
+
+/* ===== Home clock + weather (Open-Meteo, free, no key) ===== */
+const WX_PLACE = { name: 'Bengaluru', lat: 12.9716, lon: 77.5946 };
+const WX_CODE = c => c === 0 ? ['Clear', '\u2600\uFE0F', '\uD83C\uDF19'] : c <= 2 ? ['Partly Cloudy', '\uD83C\uDF24\uFE0F', '\uD83C\uDF19'] : c === 3 ? ['Mostly Cloudy', '\u2601\uFE0F', '\u2601\uFE0F']
+  : c <= 48 ? ['Foggy', '\uD83C\uDF2B\uFE0F', '\uD83C\uDF2B\uFE0F'] : c <= 57 ? ['Drizzle', '\uD83C\uDF26\uFE0F', '\uD83C\uDF27\uFE0F'] : c <= 67 ? ['Rain', '\uD83C\uDF27\uFE0F', '\uD83C\uDF27\uFE0F']
+  : c <= 77 ? ['Snow', '\u2744\uFE0F', '\u2744\uFE0F'] : c <= 82 ? ['Rain showers', '\uD83C\uDF26\uFE0F', '\uD83C\uDF27\uFE0F'] : ['Thunderstorm', '\u26C8\uFE0F', '\u26C8\uFE0F'];
+function wxLoad(){ try { return JSON.parse(localStorage.getItem('boxup.wx') || 'null'); } catch (e) { return null; } }
+function wxPaint(){
+  const el = document.getElementById('hcW'), w = wxLoad(); if (!el) return;
+  if (!w) { el.classList.add('hide'); return; }
+  const [txt, dayI, nightI] = WX_CODE(w.code);
+  el.innerHTML = `<i>${w.day ? dayI : nightI}</i><b>${Math.round(w.t)}&deg;C</b><span>${txt} &middot; ${WX_PLACE.name}</span><span class="hl">H ${Math.round(w.hi)}&deg; &middot; L ${Math.round(w.lo)}&deg; &middot; &#127783; ${w.rain == null ? '-' : w.rain}%</span>`;
+  el.title = 'Weather updated ' + new Date(w.at).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+  el.classList.remove('hide');
+}
+async function wxFetch(force){
+  const w = wxLoad();
+  if (!force && w && Date.now() - w.at < 30 * 60000) { wxPaint(); return; }
+  try {
+    const u = `https://api.open-meteo.com/v1/forecast?latitude=${WX_PLACE.lat}&longitude=${WX_PLACE.lon}&current=temperature_2m,weather_code,is_day&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=1`;
+    const j = await (await fetch(u)).json();
+    const d = { at: Date.now(), t: j.current.temperature_2m, code: j.current.weather_code, day: !!j.current.is_day,
+      hi: j.daily.temperature_2m_max[0], lo: j.daily.temperature_2m_min[0], rain: j.daily.precipitation_probability_max ? j.daily.precipitation_probability_max[0] : null };
+    try { localStorage.setItem('boxup.wx', JSON.stringify(d)); } catch (e) {}
+  } catch (e) { /* offline: keep the last weather */ }
+  wxPaint();
+}
+function clockTick(){
+  const t = document.getElementById('hcT'); if (!t) return;
+  const n = new Date(), p = x => String(x).padStart(2, '0');
+  let h = n.getHours(); const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+  t.textContent = p(h) + ':' + p(n.getMinutes());
+  document.getElementById('hcS').textContent = ':' + p(n.getSeconds());
+  document.getElementById('hcD').textContent = n.toLocaleDateString('en-GB', { weekday: 'long' }).toUpperCase() + ' \u00B7 ' + p(n.getDate()) + ' ' + n.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase() + ' ' + n.getFullYear() + ' \u00B7 ' + ap;
+  if (!t.dataset.wx) { t.dataset.wx = 1; wxPaint(); }
+}
+setInterval(clockTick, 1000);
+setInterval(() => wxFetch(false), 5 * 60000);
+new MutationObserver(() => { if (document.getElementById('hcT') && !document.getElementById('hcT').dataset.on) { document.getElementById('hcT').dataset.on = 1; clockTick(); } }).observe(document.body, { childList: true, subtree: true });
+wxFetch(false);
