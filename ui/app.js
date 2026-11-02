@@ -13,7 +13,7 @@ const BUILTIN = [
   {id:'gate', name:'Gate Scanner', short:'Gate Scanner', icon:'&#128737;', color:grad('#e7ad3e','#88560b'), url:'https://logisticsboxup.github.io/boxup-gate/'},
   {id:'gsys', name:'Gate System', short:'Gate System', icon:'&#128202;', color:grad('#a75be6','#6023ae'), url:'https://logisticsboxup.github.io/boxup-gate/dashboard.html'},
   {id:'log', name:'Label Log', short:'Label Log', icon:'&#128203;', color:grad('#36c79d','#07805e'), url:'https://docs.google.com/spreadsheets/d/17IMy6t47Y0q895rvQsAEdgsGM6w_2lSDWso8BIWHEtg/edit'},
-  {id:'deliv', name:'Delivery Tracker', short:'Delivery', icon:'&#9989;', color:grad('#ff9b2d','#c85b00'), url:'https://docs.google.com/spreadsheets/d/1WDZMJaT7Lr8rUEEFwgQwX7Khzb7D_OGaQUwKIwmIk_Q/edit', screen:'deliv'},
+  {id:'deliv', name:'Dispatch Control Center', short:'Dispatch', icon:'&#128666;', color:grad('#ff9b2d','#c85b00'), url:'https://logisticsboxup.github.io/boxup-labels/dispatch/'},
   {id:'wa', name:'WhatsApp', short:'WhatsApp', icon:'&#128172;', color:grad('#3ddc84','#128c4a'), url:'https://web.whatsapp.com/'},
   {id:'google', name:'Google', short:'Google', icon:'G', color:grad('#5e97f6','#2a56c6'), url:'https://www.google.com/', homeOff:true},
 ];
