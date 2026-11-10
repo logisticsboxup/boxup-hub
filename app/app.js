@@ -21,6 +21,12 @@ const THEMES = [
   ['light','Light'], ['dark','Dark'], ['nature','Nature'], ['minimal','Minimal'],
   ['ocean','Ocean'], ['sunset','Sunset'], ['forest','Forest'], ['aurora','Aurora'],
 ];
+/* Automatic theme: the wallpaper changes by itself every few minutes (Home screen > Theme > Automatic) */
+function autoTheme(){
+  const mins = Math.max(1, +(S.autoEvery || 30));
+  return THEMES[Math.floor(Date.now() / (mins * 60000)) % THEMES.length][0];
+}
+function homeBg(){ const b = (S.home || {}).bg || 'auto'; return b === 'auto' ? autoTheme() : b; }
 const SITES = [
   ['DTDC', 'https://www.dtdc.in/', '#ef5350'], ['Porter', 'https://porter.in/', '#42a5f5'], ['Shadowfax', 'https://www.shadowfax.in/', '#43a047'],
   ['Shree Anjani', 'https://shreeanjani.co.in/', '#ff7043'], ['Zoho Inventory', 'https://inventory.zoho.in/', '#e53935'], ['Gmail', 'https://mail.google.com/', '#c62828'],
@@ -213,7 +219,7 @@ H.on('update-progress', p => {
 /* ---------------- home ---------------- */
 let mode = 'orders', sugSel = -1;
 function renderHome(){
-  const h = (S.home || {}), bg = h.bg || 'photo';
+  const h = (S.home || {}), bg = homeBg();
   const glass = h.glass == null ? .55 : h.glass;
   document.documentElement.style.setProperty('--glass', glass);
   const bgCss = bg === 'green' ? 'linear-gradient(135deg,#0b281c,#164631)' : bg === 'blue' ? 'linear-gradient(135deg,#1f2a44,#3b4a6b)' : bg === 'custom' && h.bgData ? `linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.35)),url(${h.bgData}) center/cover` : '';
@@ -343,7 +349,7 @@ const PAGE = {
       ${row('Auto refresh', "How often Home's numbers and the Delivery Tracker refresh", sel('refresh', S.refresh || 30, [[10,'Every 10 seconds'],[30,'Every 30 seconds'],[60,'Every minute'],[300,'Every 5 minutes'],[900,'Every 15 minutes'],[1800,'Every 30 minutes'],[86400,'Once a day']]))}</div>`;
   },
   async 'Home screen'(){
-    const h = S.home || {}, bg = h.bg || 'photo';
+    const h = S.home || {}, bg = h.bg || 'auto';
     const rows = homeOrder().map((id, k) => { const a = appById(id); const on = isOnHome(a);
       return `<div class="hsrow${on ? '' : ' offr'}"><span class="arr"><button data-act="hsup" data-k="${k}">&#9650;</button><button data-act="hsdn" data-k="${k}">&#9660;</button></span><span class="hi" style="background:${a.color}">${a.icon}</span><b>${esc(a.name)}${a.kind === 'program' ? '<small>program</small>' : a.custom ? '<small>website</small>' : ''}</b>${a.custom ? `<button class="del" title="Remove" data-act="delapp" data-id="${esc(a.id)}">&#128465;</button>` : ''}<button class="tg${on ? '' : ' off'}" data-act="hsapp" data-id="${esc(a.id)}"></button></div>`; }).join('');
     const bgs = [['photo','url(assets/bg.jpg)'],['green','linear-gradient(135deg,#0b281c,#164631)'],['blue','linear-gradient(135deg,#1f2a44,#3b4a6b)']].concat(h.bgData ? [['custom', `url(${h.bgData})`]] : []);
@@ -355,7 +361,8 @@ const PAGE = {
         ${row('Apps', 'App shortcuts on Home', tg('w:apps', W('apps')))}${row('Search bar', 'Orders and Google search', tg('w:search', W('search')))}${row("Today's numbers", 'Labels printed, dispatched, pending', tg('w:nums', W('nums')))}${row('Recent activity', 'Latest orders and their status', tg('w:recent', W('recent')))}</div>
       <div class="card" style="margin-top:22px"><div class="labrow"><div class="lab" style="margin:0">Theme</div>
         <label class="arf">Auto refresh ${sel('refresh', S.refresh || 30, [[10,'Every 10 seconds'],[30,'Every 30 seconds'],[60,'Every minute'],[300,'Every 5 minutes'],[900,'Every 15 minutes'],[1800,'Every 30 minutes'],[86400,'Once a day']])}</label></div>
-        <div class="thg">${THEMES.map(([k, n]) => `<button class="${bg === k ? 'on' : ''}" data-act="hsbg" data-k="${k}" style="background-image:url(assets/themes/${k}.jpg)">${n}</button>`).join('')}</div>
+        <div class="thg"><button class="${bg === 'auto' ? 'on' : ''} auto" data-act="hsbg" data-k="auto" style="background:url(assets/themes/light.jpg) 0 0/50% 50% no-repeat,url(assets/themes/aurora.jpg) 100% 0/50% 50% no-repeat,url(assets/themes/forest.jpg) 0 100%/50% 50% no-repeat,url(assets/themes/sunset.jpg) 100% 100%/50% 50% no-repeat">&#8635; Automatic</button>${THEMES.map(([k, n]) => `<button class="${bg === k ? 'on' : ''}" data-act="hsbg" data-k="${k}" style="background-image:url(assets/themes/${k}.jpg)">${n}</button>`).join('')}</div>
+        ${bg === 'auto' ? `<div class="labrow" style="margin-top:12px"><div class="lab" style="margin:0">Automatic: change wallpaper</div>${sel('autoEvery', S.autoEvery || 30, [[5,'Every 5 minutes'],[15,'Every 15 minutes'],[30,'Every 30 minutes'],[60,'Every hour'],[180,'Every 3 hours'],[1440,'Every day']])}</div>` : ''}
         <div class="lab">Picture background</div><div class="bgs">${bgs.map(([k, b]) => `<button class="${bg === k ? 'on' : ''}" data-act="hsbg" data-k="${k}" style="background:${b}"></button>`).join('')}<button class="btn dash" style="flex:1 1 0;height:76px" data-act="hsupload">+ Upload</button></div>
         <div class="lab">Card see-through</div><input type="range" min="0.25" max="0.95" step="0.05" value="${h.glass == null ? .55 : h.glass}" id="glass" style="width:100%;accent-color:#0d7650"></div></div></div>`;
   },
@@ -540,7 +547,7 @@ document.addEventListener('click', async e => {
     if(a === 'hsdn' && k < order.length - 1){ [order[k + 1], order[k]] = [order[k], order[k + 1]]; h.order = order; }
     if(a === 'hsbg') h.bg = t.dataset.k;
     if(a === 'hsupload'){ const d = await H.pickImage(); if(!d) return; h.bgData = d; h.bg = 'custom'; }
-    if(a === 'hsreset'){ delete h.order; delete h.off; h.widgets = {}; h.bg = 'photo'; h.glass = .55; }
+    if(a === 'hsreset'){ delete h.order; delete h.off; h.widgets = {}; h.bg = 'auto'; h.glass = .55; }
     await save({home:h}); account('Home screen'); topbar();
   }
   else if(a === 'wmnew'){ wmDialog(null); }
@@ -569,8 +576,8 @@ document.addEventListener('click', async e => {
 });
 document.addEventListener('change', async e => {
   const s = e.target.closest('[data-sel]'); if(!s) return;
-  const k = s.dataset.sel, v = k === 'refresh' ? +s.value : s.value;
-  await save({[k]: v}); if(k === 'theme') applyTheme(); if(k === 'refresh') startTimers(); toast('Saved');
+  const k = s.dataset.sel, v = k === 'refresh' || k === 'autoEvery' ? +s.value : s.value;
+  await save({[k]: v}); if(k === 'theme') applyTheme(); if(k === 'refresh') startTimers(); if(k === 'autoEvery') autoTick(true); toast('Saved');
 });
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape') closeLayer();
@@ -594,12 +601,23 @@ async function checkGate(){
   if(seenGate === null){ seenGate = new Set(keys); return; }
   bad.forEach((r, i) => { if(!seenGate.has(keys[i])){ seenGate.add(keys[i]); H.notify('Gate scan problem', `${r.status}: ${r.orderid}${r.by ? ' (guard ' + r.by + ')' : ''}`); toast(`Gate: ${r.status} · ${r.orderid}`, [['Open Gate System', () => open('gsys')]]); } });
 }
+/* Automatic wallpaper: swap the picture on Home when its time comes (no reload, search text kept) */
+let autoLast = null;
+function autoTick(now){
+  if(((S.home || {}).bg || 'auto') !== 'auto') { autoLast = null; return; }
+  const th = autoTheme(); if(th === autoLast && !now) return; autoLast = th;
+  const w = document.querySelector('#home .bgwrap'); if(!w) return;
+  w.classList.add('th', 'plain'); w.style.background = ''; w.dataset.th = th;
+}
+setInterval(() => { if(!document.hidden) autoTick(false); }, 20000);
+document.addEventListener('visibilitychange', () => { if(!document.hidden) autoTick(false); });
 function applyTheme(){ document.body.classList.toggle('dark', S.theme === 'dark'); }
 
 /* ---------------- start ---------------- */
 async function enter(){
   show('shell');
   applyTheme();
+  if(!(S.home && S.home.autoV1)) await save({home: Object.assign({}, S.home || {}, {bg:'auto', autoV1:true})});
   topbar(); renderHome();
   const sp = S.startPage && S.startPage !== 'home' ? S.startPage : null;
   if(sp && appById(sp)) open(sp);

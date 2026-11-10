@@ -295,6 +295,7 @@ select.dv-tab{appearance:auto;padding:8px 12px}
 .bgwrap[data-th="aurora"]{--pic:url(assets/themes/aurora.jpg);--page:#0a1015;--acc:#9af0dd}
 .thg{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:9px;margin-top:4px}
 .thg button{height:64px;border-radius:12px;border:2px solid transparent;position:relative;overflow:hidden;padding:0;color:#fff;font:700 10.5px Inter,Arial;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;text-shadow:0 1px 5px rgba(0,0,0,.85);background-size:cover;background-position:center}
+.thg button.auto{background-color:#1e4a2c}
 .thg button.on{border-color:var(--g);box-shadow:0 0 0 3px rgba(13,118,80,.18)}
 .labrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .arf{display:flex;align-items:center;gap:8px;white-space:nowrap;flex:none;font:800 11px Inter,Arial;letter-spacing:.07em;text-transform:uppercase;color:var(--mu)}
