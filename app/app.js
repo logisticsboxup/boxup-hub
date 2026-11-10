@@ -14,6 +14,7 @@ const BUILTIN = [
   {id:'gsys', name:'Gate System', short:'Gate System', icon:'&#128202;', color:grad('#a75be6','#6023ae'), url:'https://logisticsboxup.github.io/boxup-gate/dashboard.html'},
   {id:'log', name:'Label Log', short:'Label Log', icon:'&#128203;', color:grad('#36c79d','#07805e'), url:'https://docs.google.com/spreadsheets/d/17IMy6t47Y0q895rvQsAEdgsGM6w_2lSDWso8BIWHEtg/edit'},
   {id:'deliv', name:'Dispatch Control Center', short:'Dispatch', icon:'&#128666;', color:grad('#ff9b2d','#c85b00'), url:'https://logisticsboxup.github.io/boxup-labels/dispatch/'},
+  {id:'partner', name:'Partner Desk', short:'Partner', icon:'&#129309;', color:grad('#ff8a50','#c94a17'), url:'https://logisticsboxup.github.io/boxup-partner/'},
   {id:'wa', name:'WhatsApp', short:'WhatsApp', icon:'&#128172;', color:grad('#3ddc84','#128c4a'), url:'https://web.whatsapp.com/'},
   {id:'google', name:'Google', short:'Google', icon:'G', color:grad('#5e97f6','#2a56c6'), url:'https://www.google.com/', homeOff:true},
 ];
@@ -63,7 +64,8 @@ const appById = id => allApps().find(a => a.id === id);
 function homeOrder(){
   const ids = allApps().map(a => a.id);
   const order = (S.home && S.home.order || []).filter(id => ids.includes(id));
-  ids.forEach(id => { if(!order.includes(id)) order.push(id); });
+  ids.forEach((id, i) => { if(order.includes(id)) return;          // a new app goes right after the app before it in the list
+    const prev = i ? order.indexOf(ids[i - 1]) : -1; order.splice(prev >= 0 ? prev + 1 : order.length, 0, id); });
   return order;
 }
 function isOnHome(a){ const off = (S.home && S.home.off) || {}; return off[a.id] === undefined ? !a.homeOff : !off[a.id]; }
